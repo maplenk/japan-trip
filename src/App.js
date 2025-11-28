@@ -16,6 +16,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
+// Google Drive folder with all trip documents
+const GOOGLE_DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1DoyM_lWfvlYCr2LlXLcTRi4DwJycrRVp';
+
 // Component to handle map interactions from sidebar
 function MapController({ center, zoom, shouldFly }) {
   const map = useMap();
@@ -578,7 +581,27 @@ export default function JapanTripMap() {
             November 30 - December 28 | 28 Days | {locations.length} Destinations
           </p>
         </div>
-        <div style={{ width: '100px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <a
+            href={GOOGLE_DRIVE_FOLDER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              backgroundColor: '#FFE66D',
+              color: '#2C3E50',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}
+          >
+            📁 Documents
+          </a>
           <button
             onClick={() => {
               setEditingLocation(null);
