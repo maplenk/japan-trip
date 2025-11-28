@@ -86,19 +86,21 @@ export default function DayByDayView({ locations, onEditLocation }) {
                                     <div key={loc.id} style={{ marginBottom: '16px', borderLeft: `4px solid ${loc.color}`, paddingLeft: '16px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                             <h4 style={{ margin: 0, color: '#2D3748' }}>{loc.name}</h4>
-                                            <button
-                                                onClick={() => onEditLocation(loc)}
-                                                style={{
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    color: '#4ECDC4',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600'
-                                                }}
-                                            >
-                                                EDIT
-                                            </button>
+                                            {onEditLocation && (
+                                                <button
+                                                    onClick={() => onEditLocation(loc)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#4ECDC4',
+                                                        cursor: 'pointer',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
+                                                    EDIT
+                                                </button>
+                                            )}
                                         </div>
 
                                         {/* Transport for this day */}

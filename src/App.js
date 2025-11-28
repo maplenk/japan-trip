@@ -288,6 +288,11 @@ export default function JapanTripMap() {
   const markerRefs = useRef({});
   const mapRef = useRef(null); // Ref for the MapContainer
 
+  // Check if running locally (allow editing only on localhost)
+  const isLocalhost = window.location.hostname === 'localhost' ||
+                      window.location.hostname === '127.0.0.1' ||
+                      window.location.hostname === '';
+
   // Calculate trip statistics
   const tripStats = {
     totalDays: 28,
@@ -602,23 +607,25 @@ export default function JapanTripMap() {
           >
             📁 Documents
           </a>
-          <button
-            onClick={() => {
-              setEditingLocation(null);
-              setIsEditing(true);
-            }}
-            style={{
-              backgroundColor: '#4ECDC4',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            + Add
-          </button>
+          {isLocalhost && (
+            <button
+              onClick={() => {
+                setEditingLocation(null);
+                setIsEditing(true);
+              }}
+              style={{
+                backgroundColor: '#4ECDC4',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              + Add
+            </button>
+          )}
         </div>
       </div>
 
@@ -746,24 +753,26 @@ export default function JapanTripMap() {
                       position: 'relative'
                     }}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditLocation(loc);
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        opacity: 0.5
-                      }}
-                    >
-                      ✏️
-                    </button>
+                    {isLocalhost && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditLocation(loc);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '16px',
+                          opacity: 0.5
+                        }}
+                      >
+                        ✏️
+                      </button>
+                    )}
 
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       {/* Number Badge */}
@@ -820,7 +829,7 @@ export default function JapanTripMap() {
                 ))
               ) : (
                 // Daily View
-                <DayByDayView locations={filteredLocations} onEditLocation={handleEditLocation} />
+                <DayByDayView locations={filteredLocations} onEditLocation={isLocalhost ? handleEditLocation : null} />
               )}
             </div>
 
@@ -947,17 +956,19 @@ export default function JapanTripMap() {
                       }}>
                         {idx + 1}. {loc.name}
                       </h3>
-                      <button
-                        onClick={() => handleEditLocation(loc)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px'
-                        }}
-                      >
-                        ✏️
-                      </button>
+                      {isLocalhost && (
+                        <button
+                          onClick={() => handleEditLocation(loc)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '16px'
+                          }}
+                        >
+                          ✏️
+                        </button>
+                      )}
                     </div>
 
                     <div style={{ marginBottom: '8px' }}>
