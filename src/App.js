@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Polyline, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import './responsive.css';
 import html2canvas from 'html2canvas';
 import { useState, useRef, useEffect } from 'react';
 import TripEditor from './components/TripEditor';
@@ -567,45 +568,29 @@ export default function JapanTripMap() {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{
+      <div className="app-header" style={{
         backgroundColor: '#2C3E50',
         color: 'white',
-        padding: '20px',
-        textAlign: 'center',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+        position: 'relative',
+        zIndex: 1002
       }}>
-        <div style={{ width: '100px' }}></div> {/* Spacer */}
-        <div>
-          <h1 style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: 'bold' }}>
-            🗾 Japan Trip Itinerary Map
-          </h1>
-          <p style={{ margin: '0', fontSize: '14px', opacity: 0.9 }}>
-            November 30 - December 28 | 28 Days | {locations.length} Destinations
+        <div className="header-spacer"></div>
+        <div className="header-title">
+          <h1>🗾 Japan Trip Itinerary Map</h1>
+          <p style={{ opacity: 0.9 }}>
+            Nov 30 - Dec 28 | 28 Days | {locations.length} Destinations
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="header-buttons">
           <a
             href={GOOGLE_DRIVE_FOLDER_URL}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              backgroundColor: '#FFE66D',
-              color: '#2C3E50',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px'
-            }}
+            className="header-btn"
+            style={{ backgroundColor: '#FFE66D', color: '#2C3E50' }}
           >
-            📁 Documents
+            📁 Docs
           </a>
           {isLocalhost && (
             <button
@@ -613,15 +598,8 @@ export default function JapanTripMap() {
                 setEditingLocation(null);
                 setIsEditing(true);
               }}
-              style={{
-                backgroundColor: '#4ECDC4',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
+              className="header-btn"
+              style={{ backgroundColor: '#4ECDC4', color: 'white' }}
             >
               + Add
             </button>
@@ -633,38 +611,42 @@ export default function JapanTripMap() {
       <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
 
         {/* Collapsible Sidebar */}
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: sidebarOpen ? '40%' : '0',
-          height: '100vh',
-          backgroundColor: 'white',
-          boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
-          transition: 'width 0.3s ease',
-          overflow: 'hidden',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
+        <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           {/* Sidebar Content */}
           <div style={{
-            width: '100%', // Changed from 450px to 100% to fill parent
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            paddingTop: '100px' // Offset for header
+            paddingTop: '70px'
           }}>
 
-            {/* Trip Statistics */}
+            {/* Trip Statistics with Close Button */}
             <div style={{
               backgroundColor: '#F7FAFC',
-              padding: '20px',
+              padding: '15px 20px',
               borderBottom: '1px solid #E2E8F0'
             }}>
-              <h2 style={{ margin: '0 0 15px 0', fontSize: '18px', fontWeight: 'bold', color: '#2D3748' }}>
-                📊 Trip Overview
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#2D3748' }}>
+                  📊 Trip Overview
+                </h2>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="sidebar-close-btn"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: '#666',
+                    padding: '4px 8px',
+                    lineHeight: 1
+                  }}
+                >
+                  ×
+                </button>
+              </div>
               <StatsDashboard stats={tripStats} />
             </div>
 
@@ -885,24 +867,7 @@ export default function JapanTripMap() {
         {/* Sidebar Toggle Button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            position: 'fixed',
-            left: sidebarOpen ? '40%' : '0',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 1001,
-            backgroundColor: '#2C3E50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0 8px 8px 0',
-            padding: '20px 8px',
-            cursor: 'pointer',
-            fontSize: '18px',
-            transition: 'left 0.3s ease-in-out',
-            boxShadow: '2px 0 8px rgba(0,0,0,0.2)'
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#1A252F'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#2C3E50'}
+          className={`sidebar-toggle ${sidebarOpen ? 'sidebar-open' : ''}`}
         >
           {sidebarOpen ? '◀' : '▶'}
         </button>
@@ -1023,16 +988,12 @@ export default function JapanTripMap() {
       </div>
 
       {/* Footer with trip summary */}
-      <div style={{
+      <div className="app-footer" style={{
         backgroundColor: '#34495E',
-        color: 'white',
-        padding: '15px 20px',
-        textAlign: 'center',
-        fontSize: '13px'
+        color: 'white'
       }}>
         <p style={{ margin: 0 }}>
-          Click on numbered markers or sidebar items to see detailed information |
-          Use the toggle button to show/hide sidebar | Scroll to zoom | Drag to pan
+          Tap markers or list items for details | Use ▶ to toggle sidebar
         </p>
       </div>
 
