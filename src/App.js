@@ -69,7 +69,7 @@ const INITIAL_LOCATIONS = [
     endDate: '2025-12-05',
     dates: 'Nov 30 - Dec 5',
     duration: '5 nights',
-    activities: ['Visit Otaru', 'Klook Tour', 'Hill of Buddha', 'Chill in Sapporo', 'Odori Park', 'Clock Tower', 'Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM'],
+    activities: ['Hill of Buddha', 'Klook Tour', 'Otaru Day Trip', 'Chill in Sapporo', 'Odori Park', 'Clock Tower', 'Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM'],
     transport: 'Local JR + Bus',
     accommodation: 'Hotel (Booking.com)',
     type: 'stay',
@@ -79,9 +79,9 @@ const INITIAL_LOCATIONS = [
       { name: 'JR Inn Sapporo Kita 2 Jo', address: '060-0002 Hokkaido, Sapporo, Chuo-ku Kita 2Jo Nishi 2-8-1', bookingRef: 'Booking.com', link: 'https://www.booking.com' }
     ],
     dailyItinerary: {
-      '2025-12-01': ['Visit Otaru'],
+      '2025-12-01': ['Hill of Buddha'],
       '2025-12-02': ['Klook Tour'],
-      '2025-12-03': ['Hill of Buddha'],
+      '2025-12-03': ['Otaru Day Trip'],
       '2025-12-04': ['Chill in Sapporo', 'Odori Park', 'Clock Tower'],
       '2025-12-05': ['Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM']
     },
@@ -513,6 +513,31 @@ export default function JapanTripMap() {
     window.print();
   };
 
+  // Move activity between days within the same location
+  const handleMoveActivity = (locId, fromDate, toDate, activityIndex, activity) => {
+    setLocations(prev => prev.map(loc => {
+      if (loc.id !== locId) return loc;
+
+      const newItinerary = { ...loc.dailyItinerary };
+
+      // Remove from source date
+      const fromActivities = [...(newItinerary[fromDate] || [])];
+      fromActivities.splice(activityIndex, 1);
+      if (fromActivities.length > 0) {
+        newItinerary[fromDate] = fromActivities;
+      } else {
+        delete newItinerary[fromDate];
+      }
+
+      // Add to target date
+      const toActivities = [...(newItinerary[toDate] || [])];
+      toActivities.push(activity);
+      newItinerary[toDate] = toActivities;
+
+      return { ...loc, dailyItinerary: newItinerary };
+    }));
+  };
+
   // Create custom icons for different location types
   const createCustomIcon = (type, number) => {
     const colors = {
@@ -933,7 +958,12 @@ export default function JapanTripMap() {
                 ))
               ) : (
                 // Daily View
-                <DayByDayView locations={filteredLocations} onEditLocation={isLocalhost ? handleEditLocation : null} darkMode={darkMode} />
+                <DayByDayView
+                  locations={filteredLocations}
+                  onEditLocation={isLocalhost ? handleEditLocation : null}
+                  onMoveActivity={isLocalhost ? handleMoveActivity : null}
+                  darkMode={darkMode}
+                />
               )}
             </div>
 

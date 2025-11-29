@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-export default function DayByDayView({ locations, onEditLocation, darkMode }) {
+export default function DayByDayView({ locations, onEditLocation, onMoveActivity, darkMode }) {
+    const [movingItem, setMovingItem] = useState(null); // { locId, fromDate, activityIndex, activity }
     // Helper to generate date range
     const getDaysArray = (start, end) => {
         const arr = [];
@@ -180,14 +181,81 @@ export default function DayByDayView({ locations, onEditLocation, darkMode }) {
                                         {/* Daily Notes/Activities */}
                                         {loc.dailyItinerary && loc.dailyItinerary[day.toISOString().split('T')[0]] && (
                                             <div style={{ marginTop: '12px' }}>
-                                                <div style={{ fontSize: '12px', fontWeight: '600', color: '#718096', marginBottom: '4px' }}>ACTIVITIES & NOTES</div>
-                                                {loc.dailyItinerary[day.toISOString().split('T')[0]].map((note, i) => (
-                                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '4px', fontSize: '14px' }}>
-                                                        <span style={{ color: '#4ECDC4', marginRight: '8px' }}>•</span>
-                                                        <span>{note}</span>
-                                                    </div>
-                                                ))}
+                                                <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>ACTIVITIES & NOTES</div>
+                                                {loc.dailyItinerary[day.toISOString().split('T')[0]].map((note, i) => {
+                                                    const dateStr = day.toISOString().split('T')[0];
+                                                    const isMoving = movingItem && movingItem.locId === loc.id && movingItem.fromDate === dateStr && movingItem.activityIndex === i;
+
+                                                    return (
+                                                        <div key={i} style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            marginBottom: '4px',
+                                                            fontSize: '14px',
+                                                            backgroundColor: isMoving ? 'var(--bg-tertiary)' : 'transparent',
+                                                            padding: '4px 6px',
+                                                            borderRadius: '4px',
+                                                            gap: '8px'
+                                                        }}>
+                                                            <span style={{ color: '#4ECDC4' }}>•</span>
+                                                            <span style={{ flex: 1 }}>{note}</span>
+                                                            {onMoveActivity && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (isMoving) {
+                                                                            setMovingItem(null);
+                                                                        } else {
+                                                                            setMovingItem({ locId: loc.id, fromDate: dateStr, activityIndex: i, activity: note });
+                                                                        }
+                                                                    }}
+                                                                    style={{
+                                                                        background: isMoving ? '#FF6B6B' : 'var(--bg-tertiary)',
+                                                                        border: 'none',
+                                                                        borderRadius: '4px',
+                                                                        padding: '2px 6px',
+                                                                        cursor: 'pointer',
+                                                                        fontSize: '11px',
+                                                                        color: isMoving ? 'white' : 'var(--text-muted)'
+                                                                    }}
+                                                                    title={isMoving ? 'Cancel move' : 'Move to another day'}
+                                                                >
+                                                                    {isMoving ? '✕' : '↔️'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
+                                        )}
+
+                                        {/* Move target indicator */}
+                                        {movingItem && movingItem.locId === loc.id && movingItem.fromDate !== day.toISOString().split('T')[0] && (
+                                            <button
+                                                onClick={() => {
+                                                    onMoveActivity(
+                                                        loc.id,
+                                                        movingItem.fromDate,
+                                                        day.toISOString().split('T')[0],
+                                                        movingItem.activityIndex,
+                                                        movingItem.activity
+                                                    );
+                                                    setMovingItem(null);
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    marginTop: '8px',
+                                                    padding: '8px',
+                                                    backgroundColor: '#4ECDC4',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600'
+                                                }}
+                                            >
+                                                📥 Move "{movingItem.activity}" here
+                                            </button>
                                         )}
                                     </div>
                                 ))
