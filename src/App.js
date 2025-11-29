@@ -250,7 +250,7 @@ const INITIAL_LOCATIONS = [
     endDate: '2025-12-28',
     dates: 'Dec 23 - Dec 28',
     duration: '5 nights',
-    activities: ['Checkin and rest', 'Kamakura day trip', 'Explore Shibuya', 'Explore Shinjuku', 'Explore Akihabara', 'Checkout at 6 AM', 'Transfer to Airport', 'Flight to Delhi'],
+    activities: ['Checkin and rest', 'Explore Shibuya', 'Explore Shinjuku', 'Explore Akihabara', 'Checkout at 6 AM', 'Transfer to Airport', 'Flight to Delhi'],
     transport: 'JR + Subway',
     arrivalTransport: 'Shinkansen Nozomi (~2h30m)',
     accommodation: 'Airbnb',
@@ -264,11 +264,31 @@ const INITIAL_LOCATIONS = [
     ],
     dailyItinerary: {
       '2025-12-23': ['Checkin and rest'],
-      '2025-12-24': ['Kamakura day trip'],
       '2025-12-25': ['Explore Shibuya'],
       '2025-12-26': ['Explore Shinjuku'],
       '2025-12-27': ['Explore Akihabara'],
       '2025-12-28': ['Checkout at 6 AM', 'Transfer to Airport', 'Flight to Delhi']
+    }
+  },
+  {
+    id: 10,
+    name: 'Kamakura',
+    coords: [35.3192, 139.5467],
+    startDate: '2025-12-24',
+    endDate: '2025-12-24',
+    dates: 'Dec 24',
+    duration: 'Day trip',
+    activities: ['Great Buddha (Daibutsu)', 'Hase-dera Temple', 'Tsurugaoka Hachimangu Shrine', 'Komachi Street shopping'],
+    transport: 'JR Yokosuka Line from Tokyo (~1h)',
+    accommodation: 'Return to Tokyo Airbnb',
+    type: 'daytrip',
+    color: '#FFE66D',
+    transportDetails: [
+      { type: 'Train', name: 'JR Yokosuka Line', date: '2025-12-24', departureTime: '09:00', arrivalTime: '10:00', bookingRef: 'JR Pass' }
+    ],
+    accommodationDetails: [],
+    dailyItinerary: {
+      '2025-12-24': ['Great Buddha (Daibutsu)', 'Hase-dera Temple', 'Tsurugaoka Hachimangu Shrine', 'Komachi Street shopping', 'Return to Tokyo']
     }
   }
 ];
