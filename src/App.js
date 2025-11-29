@@ -69,7 +69,7 @@ const INITIAL_LOCATIONS = [
     endDate: '2025-12-05',
     dates: 'Nov 30 - Dec 5',
     duration: '5 nights',
-    activities: ['Hill of Buddha', 'Klook Tour', 'Otaru Day Trip', 'Chill in Sapporo', 'Odori Park', 'Clock Tower', 'Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM'],
+    activities: ['Hill of Buddha', 'Klook Tour', 'Chill in Sapporo', 'Odori Park', 'Clock Tower', 'Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM'],
     transport: 'Local JR + Bus',
     accommodation: 'Hotel (Booking.com)',
     type: 'stay',
@@ -81,13 +81,33 @@ const INITIAL_LOCATIONS = [
     dailyItinerary: {
       '2025-12-01': ['Hill of Buddha'],
       '2025-12-02': ['Klook Tour'],
-      '2025-12-03': ['Otaru Day Trip'],
       '2025-12-04': ['Chill in Sapporo', 'Odori Park', 'Clock Tower'],
       '2025-12-05': ['Checkout at 10 AM', 'Transfer to domestic terminal', 'Departure at 2:25 PM']
     },
     dailyWeather: {
       '2025-12-01': '❄️ Snowy -2°C',
       '2025-12-02': '❄️ Heavy Snow -4°C'
+    }
+  },
+  {
+    id: 11,
+    name: 'Otaru',
+    coords: [43.1907, 140.9947],
+    startDate: '2025-12-03',
+    endDate: '2025-12-03',
+    dates: 'Dec 3',
+    duration: 'Day trip',
+    activities: ['Otaru Canal', 'Music Box Museum', 'LeTAO Cheesecake', 'Sakaimachi Street', 'Sushi Street'],
+    transport: 'JR Train from Sapporo (~30 min)',
+    accommodation: 'Return to Sapporo hotel',
+    type: 'daytrip',
+    color: '#FFE66D',
+    transportDetails: [
+      { type: 'Train', name: 'JR Hakodate Line', date: '2025-12-03', departureTime: '09:30', arrivalTime: '10:00', bookingRef: '' }
+    ],
+    accommodationDetails: [],
+    dailyItinerary: {
+      '2025-12-03': ['Otaru Canal', 'Music Box Museum', 'LeTAO Cheesecake', 'Sakaimachi Street', 'Sushi Street', 'Return to Sapporo']
     }
   },
   {
