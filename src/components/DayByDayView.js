@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function DayByDayView({ locations, onEditLocation }) {
+export default function DayByDayView({ locations, onEditLocation, darkMode }) {
     // Helper to generate date range
     const getDaysArray = (start, end) => {
         const arr = [];
@@ -33,9 +33,9 @@ export default function DayByDayView({ locations, onEditLocation }) {
             padding: '20px',
             maxWidth: '800px',
             margin: '0 auto',
-            backgroundColor: '#f8f9fa'
+            backgroundColor: 'var(--bg-secondary)'
         }}>
-            <h2 style={{ textAlign: 'center', color: '#2C3E50', marginBottom: '30px' }}>
+            <h2 style={{ textAlign: 'center', color: 'var(--text-primary)', marginBottom: '30px' }}>
                 Japan Trip 2025 🇯🇵
             </h2>
             {tripDays.map((day, index) => {
@@ -49,14 +49,14 @@ export default function DayByDayView({ locations, onEditLocation }) {
                 return (
                     <div key={index} style={{
                         marginBottom: '24px',
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--card-bg)',
                         borderRadius: '12px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        boxShadow: '0 2px 8px var(--card-shadow)',
                         overflow: 'hidden'
                     }}>
                         {/* Date Header */}
                         <div style={{
-                            backgroundColor: '#2C3E50',
+                            backgroundColor: 'var(--header-bg)',
                             color: 'white',
                             padding: '12px 20px',
                             display: 'flex',
@@ -80,12 +80,12 @@ export default function DayByDayView({ locations, onEditLocation }) {
                         {/* Day Content */}
                         <div style={{ padding: '20px' }}>
                             {dayLocations.length === 0 ? (
-                                <div style={{ color: '#A0AEC0', fontStyle: 'italic' }}>No location set for this day</div>
+                                <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No location set for this day</div>
                             ) : (
                                 dayLocations.map(loc => (
                                     <div key={loc.id} style={{ marginBottom: '16px', borderLeft: `4px solid ${loc.color}`, paddingLeft: '16px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <h4 style={{ margin: 0, color: '#2D3748' }}>{loc.name}</h4>
+                                            <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{loc.name}</h4>
                                             {onEditLocation && (
                                                 <button
                                                     onClick={() => onEditLocation(loc)}
@@ -203,9 +203,10 @@ export default function DayByDayView({ locations, onEditLocation }) {
 const itemStyle = {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#F7FAFC',
+    backgroundColor: 'var(--bg-secondary)',
     padding: '8px',
     borderRadius: '6px',
     marginBottom: '8px',
-    fontSize: '14px'
+    fontSize: '14px',
+    color: 'var(--text-primary)'
 };

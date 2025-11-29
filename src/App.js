@@ -279,6 +279,16 @@ export default function JapanTripMap() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list', 'timeline', 'daily'
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage or system preference
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) return saved === 'true';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'stay', 'daytrip', 'transit'
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+  const [weather, setWeather] = useState({}); // { locationId: weatherString }
   const [mapCenter, setMapCenter] = useState(null);
   const [mapZoom, setMapZoom] = useState(5);
   const [shouldFlyToLocation, setShouldFlyToLocation] = useState(false);
@@ -294,6 +304,12 @@ export default function JapanTripMap() {
                       window.location.hostname === '127.0.0.1' ||
                       window.location.hostname === '';
 
+  // Apply dark mode to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
   // Calculate trip statistics
   const tripStats = {
     totalDays: 28,
@@ -304,8 +320,12 @@ export default function JapanTripMap() {
     totalDayTrips: locations.filter(l => l.type === 'daytrip').length
   };
 
-  // Filter locations based on search query
+  // Filter locations based on search query and type filter
   const filteredLocations = locations.filter(loc => {
+    // Type filter
+    if (typeFilter !== 'all' && loc.type !== typeFilter) return false;
+
+    // Search filter
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
 
@@ -576,13 +596,53 @@ export default function JapanTripMap() {
     fetchAllWeather();
   }, []); // Run once on mount
 
+  // Fetch weather for each location (for sidebar display)
+  useEffect(() => {
+    const fetchLocationWeather = async () => {
+      const weatherData = {};
+      for (const loc of locations) {
+        try {
+          const result = await fetchWeather(loc.coords[0], loc.coords[1], loc.startDate);
+          weatherData[loc.id] = result;
+        } catch (err) {
+          console.error(`Weather fetch failed for ${loc.name}:`, err);
+        }
+      }
+      setWeather(weatherData);
+    };
+    fetchLocationWeather();
+  }, [locations]);
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation not supported');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation([position.coords.latitude, position.coords.longitude]);
+        setLocationError(null);
+        // Fly to user location
+        setMapCenter([position.coords.latitude, position.coords.longitude]);
+        setMapZoom(12);
+        setShouldFlyToLocation(true);
+        setTimeout(() => setShouldFlyToLocation(false), 100);
+      },
+      (error) => {
+        setLocationError(error.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>
       {/* Header */}
       <div className="app-header" style={{
-        backgroundColor: '#2C3E50',
+        backgroundColor: 'var(--header-bg)',
         color: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 4px var(--card-shadow)',
         position: 'relative',
         zIndex: 1002
       }}>
@@ -594,6 +654,22 @@ export default function JapanTripMap() {
           </p>
         </div>
         <div className="header-buttons">
+          <button
+            onClick={getCurrentLocation}
+            className="header-btn"
+            style={{ backgroundColor: userLocation ? '#48BB78' : '#667EEA', color: 'white' }}
+            title={locationError || 'Find my location'}
+          >
+            📍
+          </button>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="header-btn"
+            style={{ backgroundColor: darkMode ? '#F6E05E' : '#4A5568', color: darkMode ? '#744210' : 'white' }}
+            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <a
             href={GOOGLE_DRIVE_FOLDER_URL}
             target="_blank"
@@ -634,12 +710,12 @@ export default function JapanTripMap() {
 
             {/* Trip Statistics with Close Button */}
             <div style={{
-              backgroundColor: '#F7FAFC',
+              backgroundColor: 'var(--bg-secondary)',
               padding: '15px 20px',
-              borderBottom: '1px solid #E2E8F0'
+              borderBottom: '1px solid var(--border-color)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#2D3748' }}>
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                   📊 Trip Overview
                 </h2>
                 <button
@@ -650,7 +726,7 @@ export default function JapanTripMap() {
                     border: 'none',
                     fontSize: '24px',
                     cursor: 'pointer',
-                    color: '#666',
+                    color: 'var(--text-muted)',
                     padding: '4px 8px',
                     lineHeight: 1
                   }}
@@ -658,11 +734,11 @@ export default function JapanTripMap() {
                   ×
                 </button>
               </div>
-              <StatsDashboard stats={tripStats} />
+              <StatsDashboard stats={tripStats} darkMode={darkMode} />
             </div>
 
             {/* Search and View Toggle */}
-            <div style={{ padding: '15px', borderBottom: '1px solid #E0E0E0', backgroundColor: '#FFFFFF' }}>
+            <div style={{ padding: '15px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
               <input
                 type="text"
                 placeholder="🔍 Search destinations, activities..."
@@ -671,26 +747,28 @@ export default function JapanTripMap() {
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  border: '2px solid #E0E0E0',
+                  border: '2px solid var(--input-border)',
                   borderRadius: '6px',
                   fontSize: '14px',
                   outline: 'none',
                   transition: 'border-color 0.2s',
-                  marginBottom: '10px'
+                  marginBottom: '10px',
+                  backgroundColor: 'var(--input-bg)',
+                  color: 'var(--text-primary)'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#4ECDC4'}
-                onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--input-border)'}
               />
 
               {/* View Mode Toggle */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                 <button
                   onClick={() => setViewMode('list')}
                   style={{
                     flex: 1,
                     padding: '8px',
-                    backgroundColor: viewMode === 'list' ? '#4ECDC4' : '#E0E0E0',
-                    color: viewMode === 'list' ? 'white' : '#666',
+                    backgroundColor: viewMode === 'list' ? '#4ECDC4' : 'var(--bg-tertiary)',
+                    color: viewMode === 'list' ? 'white' : 'var(--text-secondary)',
                     border: 'none',
                     borderRadius: '6px',
                     fontSize: '13px',
@@ -706,8 +784,8 @@ export default function JapanTripMap() {
                   style={{
                     flex: 1,
                     padding: '8px',
-                    backgroundColor: viewMode === 'daily' ? '#4ECDC4' : '#E0E0E0',
-                    color: viewMode === 'daily' ? 'white' : '#666',
+                    backgroundColor: viewMode === 'daily' ? '#4ECDC4' : 'var(--bg-tertiary)',
+                    color: viewMode === 'daily' ? 'white' : 'var(--text-secondary)',
                     border: 'none',
                     borderRadius: '6px',
                     fontSize: '13px',
@@ -719,6 +797,34 @@ export default function JapanTripMap() {
                   🗓️ Daily
                 </button>
               </div>
+
+              {/* Type Filter */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { key: 'all', label: 'All', icon: '🗾' },
+                  { key: 'stay', label: 'Stays', icon: '🏨' },
+                  { key: 'daytrip', label: 'Day Trips', icon: '🚶' },
+                  { key: 'transit', label: 'Transit', icon: '✈️' }
+                ].map(filter => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setTypeFilter(filter.key)}
+                    style={{
+                      padding: '5px 10px',
+                      backgroundColor: typeFilter === filter.key ? '#FF6B6B' : 'var(--bg-tertiary)',
+                      color: typeFilter === filter.key ? 'white' : 'var(--text-secondary)',
+                      border: 'none',
+                      borderRadius: '20px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {filter.icon} {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Destinations List */}
@@ -726,7 +832,7 @@ export default function JapanTripMap() {
               flex: 1,
               overflowY: 'auto',
               padding: '10px',
-              backgroundColor: '#F7FAFC'
+              backgroundColor: 'var(--bg-secondary)'
             }}>
               {viewMode === 'list' ? (
                 // List View
@@ -735,14 +841,14 @@ export default function JapanTripMap() {
                     key={loc.id}
                     onClick={() => handleDestinationClick(loc)}
                     style={{
-                      backgroundColor: selectedDestination === loc.id ? '#E8F8F5' : 'white',
+                      backgroundColor: selectedDestination === loc.id ? (darkMode ? '#2D4A4A' : '#E8F8F5') : 'var(--card-bg)',
                       border: `2px solid ${selectedDestination === loc.id ? loc.color : 'transparent'}`,
                       borderRadius: '12px',
                       padding: '16px',
                       marginBottom: '12px',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                      boxShadow: '0 2px 4px var(--card-shadow)',
                       position: 'relative'
                     }}
                   >
@@ -793,11 +899,16 @@ export default function JapanTripMap() {
                           margin: '0 0 6px 0',
                           fontSize: '16px',
                           fontWeight: 'bold',
-                          color: '#2C3E50'
+                          color: 'var(--text-primary)'
                         }}>
                           {loc.name}
+                          {weather[loc.id] && (
+                            <span style={{ fontSize: '12px', fontWeight: 'normal', marginLeft: '8px', color: 'var(--text-muted)' }}>
+                              {weather[loc.id]}
+                            </span>
+                          )}
                         </h3>
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                           <div style={{ marginBottom: '4px' }}>
                             <strong>📅</strong> {loc.dates} • {loc.duration}
                           </div>
@@ -807,8 +918,8 @@ export default function JapanTripMap() {
                         </div>
                         <div style={{
                           fontSize: '12px',
-                          color: '#555',
-                          backgroundColor: '#F8F9FA',
+                          color: 'var(--text-secondary)',
+                          backgroundColor: 'var(--bg-secondary)',
                           padding: '8px',
                           borderRadius: '4px',
                           borderLeft: `3px solid ${loc.color}`
@@ -822,12 +933,12 @@ export default function JapanTripMap() {
                 ))
               ) : (
                 // Daily View
-                <DayByDayView locations={filteredLocations} onEditLocation={isLocalhost ? handleEditLocation : null} />
+                <DayByDayView locations={filteredLocations} onEditLocation={isLocalhost ? handleEditLocation : null} darkMode={darkMode} />
               )}
             </div>
 
             {/* Export/Print Buttons */}
-            <div style={{ padding: '20px', borderTop: '1px solid #eee', textAlign: 'center', display: 'flex', gap: '10px' }}>
+            <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)', textAlign: 'center', display: 'flex', gap: '10px' }}>
               <button onClick={handleExportItinerary} style={{
                 flex: 1,
                 padding: '10px',
@@ -908,6 +1019,37 @@ export default function JapanTripMap() {
                 dashArray="10, 5"
               />
             ))}
+
+            {/* User Location Marker */}
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon={L.divIcon({
+                  className: 'user-location-marker',
+                  html: `<div style="
+                    width: 20px;
+                    height: 20px;
+                    background: #4285F4;
+                    border: 3px solid white;
+                    border-radius: 50%;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                    animation: pulse 2s infinite;
+                  "></div>`,
+                  iconSize: [20, 20],
+                  iconAnchor: [10, 10]
+                })}
+              >
+                <Popup>
+                  <div style={{ textAlign: 'center', padding: '5px' }}>
+                    <strong>📍 You Are Here</strong>
+                    <br />
+                    <small style={{ color: '#666' }}>
+                      {userLocation[0].toFixed(4)}, {userLocation[1].toFixed(4)}
+                    </small>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
 
             {/* Markers for each location */}
             {locations.map((loc, idx) => (
@@ -1000,7 +1142,7 @@ export default function JapanTripMap() {
 
       {/* Footer with trip summary */}
       <div className="app-footer" style={{
-        backgroundColor: '#34495E',
+        backgroundColor: 'var(--footer-bg)',
         color: 'white'
       }}>
         <p style={{ margin: 0 }}>
