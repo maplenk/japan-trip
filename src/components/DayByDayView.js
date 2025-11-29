@@ -198,7 +198,7 @@ export default function DayByDayView({ locations, onEditLocation, onMoveActivity
                                                             gap: '8px'
                                                         }}>
                                                             <span style={{ color: '#4ECDC4' }}>•</span>
-                                                            <span style={{ flex: 1 }}>{note}</span>
+                                                            <span style={{ flex: 1, color: 'var(--text-primary)' }}>{note}</span>
                                                             {onMoveActivity && (
                                                                 <button
                                                                     onClick={() => {
