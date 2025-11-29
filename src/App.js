@@ -309,18 +309,29 @@ export default function JapanTripMap() {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
 
+    // Safe string check
+    const strIncludes = (str) => str && typeof str === 'string' && str.toLowerCase().includes(query);
+
     // Helper to check if any object in an array matches
-    const hasMatch = (arr, keys) => arr && arr.some(item => keys.some(key => item[key] && item[key].toLowerCase().includes(query)));
+    const hasMatch = (arr, keys) => arr && Array.isArray(arr) && arr.some(item =>
+      item && keys.some(key => item[key] && typeof item[key] === 'string' && item[key].toLowerCase().includes(query))
+    );
 
     // Helper to check daily itinerary
-    const hasDailyMatch = (daily) => daily && Object.values(daily).some(notes => notes.some(note => note.toLowerCase().includes(query)));
+    const hasDailyMatch = (daily) => daily && typeof daily === 'object' && Object.values(daily).some(notes =>
+      Array.isArray(notes) && notes.some(note => typeof note === 'string' && note.toLowerCase().includes(query))
+    );
+
+    // Safe array check for activities
+    const hasActivityMatch = () => loc.activities && Array.isArray(loc.activities) &&
+      loc.activities.some(a => typeof a === 'string' && a.toLowerCase().includes(query));
 
     return (
-      loc.name.toLowerCase().includes(query) ||
-      loc.activities.some(a => a.toLowerCase().includes(query)) ||
-      loc.dates.toLowerCase().includes(query) ||
-      loc.accommodation.toLowerCase().includes(query) ||
-      (loc.transport && loc.transport.toLowerCase().includes(query)) ||
+      strIncludes(loc.name) ||
+      hasActivityMatch() ||
+      strIncludes(loc.dates) ||
+      strIncludes(loc.accommodation) ||
+      strIncludes(loc.transport) ||
       hasMatch(loc.transportDetails, ['name', 'type', 'bookingRef']) ||
       hasMatch(loc.accommodationDetails, ['name', 'address', 'bookingRef']) ||
       hasDailyMatch(loc.dailyItinerary)
