@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function DayByDayView({ locations, onEditLocation, onMoveActivity, darkMode }) {
     const [movingItem, setMovingItem] = useState(null); // { locId, fromDate, activityIndex, activity }
+    const todayRef = useRef(null);
+    const containerRef = useRef(null);
+
     // Helper to generate date range
     const getDaysArray = (start, end) => {
         const arr = [];
@@ -29,8 +32,17 @@ export default function DayByDayView({ locations, onEditLocation, onMoveActivity
             d1.getDate() === d2.getDate();
     };
 
+    const today = new Date();
+
+    // Scroll to today on mount
+    useEffect(() => {
+        if (todayRef.current) {
+            todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, []);
+
     return (
-        <div id="itinerary-list-view" style={{
+        <div id="itinerary-list-view" ref={containerRef} style={{
             padding: '20px',
             maxWidth: '800px',
             margin: '0 auto',
@@ -47,17 +59,22 @@ export default function DayByDayView({ locations, onEditLocation, onMoveActivity
                     return day >= start && day <= end;
                 });
 
+                const isToday = isSameDay(day, today);
+
                 return (
-                    <div key={index} style={{
-                        marginBottom: '24px',
-                        backgroundColor: 'var(--card-bg)',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 8px var(--card-shadow)',
-                        overflow: 'hidden'
-                    }}>
+                    <div
+                        key={index}
+                        ref={isToday ? todayRef : null}
+                        style={{
+                            marginBottom: '24px',
+                            backgroundColor: 'var(--card-bg)',
+                            borderRadius: '12px',
+                            boxShadow: isToday ? '0 0 0 3px #FF6B6B, 0 2px 8px var(--card-shadow)' : '0 2px 8px var(--card-shadow)',
+                            overflow: 'hidden'
+                        }}>
                         {/* Date Header */}
                         <div style={{
-                            backgroundColor: 'var(--header-bg)',
+                            backgroundColor: isToday ? '#FF6B6B' : 'var(--header-bg)',
                             color: 'white',
                             padding: '12px 20px',
                             display: 'flex',
@@ -68,6 +85,18 @@ export default function DayByDayView({ locations, onEditLocation, onMoveActivity
                                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
                                     {formatDate(day)}
                                 </h3>
+                                {isToday && (
+                                    <span style={{
+                                        fontSize: '11px',
+                                        backgroundColor: 'white',
+                                        color: '#FF6B6B',
+                                        padding: '2px 8px',
+                                        borderRadius: '12px',
+                                        fontWeight: '700'
+                                    }}>
+                                        TODAY
+                                    </span>
+                                )}
                                 {/* Weather Display */}
                                 {dayLocations.map(loc => loc.dailyWeather && loc.dailyWeather[day.toISOString().split('T')[0]] && (
                                     <span key={loc.id} style={{ fontSize: '13px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px' }}>
